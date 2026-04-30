@@ -1,0 +1,435 @@
+---
+title: "Tarea 1"
+author: "Hernández-Díaz José Manuel"
+date: "2026-04-23"
+format:
+  html:
+    theme:
+      light: cosmo
+      dark: dakly
+    toc: true
+    toc-depth: 3
+    code-fold: true
+    self-contained: true
+jupyter: python3
+---
+
+## Tejido: Hueso / Edades: 3 y 24 meses
+
+En SRA Run Selector encontre varias muestras de hueso del dataset [GSE132040](https://www.ncbi.nlm.nih.gov/Traces/study/?acc=PRJNA544748&o=acc_s%3Aa), pero de hembras solo habian 3 muestras de 3 meses de edad y ninguna de 24 meses de edad, razon por la cual seleccione las siguientes muestras:
+
+Machos 3 meses:
+`
+SRR9126031
+`
+`
+SRR9125589
+`
+`
+SRR9125829
+`
+Machos 24 meses:
+`
+SRR9126377
+`
+`
+SRR9126452
+`
+`
+SRR9126454
+`
+
+## Creacion del enviorment e instalacion de Star
+### Terminal utilizada
+Dado que estoy desde windows, creo que en teoria puedo correr estos comandos desde el cmd nativo, sin embargo yo ya tenia una terminal ubuntu que he utilizado antes para docking, asi que utilizare esa terminal.
+
+### Instalacion de star
+
+Busque en el github de Alexdobin:
+
+<https://github.com/alexdobin/STAR>
+
+Sin embargo el manual del usuario no usa un lenguaje exactamente amigable para usuarios nuevos, no asi la pagina:
+
+<https://anaconda.org/channels/bioconda/packages/star/overview>
+
+pero de manera mas sencilla aun, usando la linea de codigo directo desde la creacion del entorno en conda:
+
+<https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html>
+
+se puede especificar el paquete star para crear el entorno e instalar star
+
+Ya en ubuntu cree el ambiente de la siguiente manera:
+```bash
+conda create -n star_env star
+```
+
+y procedo a activarlo:
+```bash
+conda activate star_env
+```
+
+## Descargando las secuencias de los ratones de 3 y 24 meses
+
+Para tener todo esto en orden, cree una carpeta:
+
+```bash
+mkdir proyecto_rnaseq
+
+cd proyecto_rnaseq
+```
+
+Para descargar estas secuencias utilizare primero `fasterq-dump` de la siguiente manera:
+```bash
+fasterq-dump SRR9126031
+
+fasterq-dump SRR9125589
+
+fasterq-dump SRR9125829
+
+fasterq-dump SRR9126377
+
+fasterq-dump SRR9126452
+
+fasterq-dump SRR9126454
+```
+
+Tras la descarga esto es lo que obtive:
+```bash
+(star_env) joelheaz@DESKTOP-MHDiaz:~/proyecto_rnaseq$ ls
+SRR9125589_1.fastq  SRR9125829_2.fastq  SRR9126377_1.fastq  SRR9126452_2.fastq  fasterq.tmp.DESKTOP-MHDiaz.1545
+SRR9125589_2.fastq  SRR9126031_1.fastq  SRR9126377_2.fastq  SRR9126454_1.fastq  fasterq.tmp.DESKTOP-MHDiaz.1588
+SRR9125829_1.fastq  SRR9126031_2.fastq  SRR9126452_1.fastq  SRR9126454_2.fastq  fasterq.tmp.DESKTOP-MHDiaz.525
+```
+
+### Compresion de los archivos
+
+los archivos obtenidos son `.fastq`, como se menciono en clase, conviene mas comprimir estos archivos para que no ocupen espacio, asi que comprimi los archivos:
+```bash
+gzip *.fastq
+```
+
+teniendo como resultado:
+```bash
+(star_env) joelheaz@DESKTOP-MHDiaz:~/proyecto_rnaseq$ ls
+SRR9125589_1.fastq.gz  SRR9125829_2.fastq.gz  SRR9126377_1.fastq.gz  SRR9126452_2.fastq.gz
+SRR9125589_2.fastq.gz  SRR9126031_1.fastq.gz  SRR9126377_2.fastq.gz  SRR9126454_1.fastq.gz
+SRR9125829_1.fastq.gz  SRR9126031_2.fastq.gz  SRR9126452_1.fastq.gz  SRR9126454_2.fastq.gz
+```
+
+## FastQC
+
+cree la carpeta fastqc_result para el output
+
+```bash
+mkdir fastqc_result
+```
+
+### Instalacion de fastqc
+
+```bash
+conda install fastqc
+```
+
+respecto a la flag de CORES, encontre un dato relevante, parece que la flag `-t` hace referencia a hilos `--threads`, no a nucleos, esto es relevante porque mi equipo tiene `8 nucleos` y `16 hilos`, para eficientar el proceso y poder seguir usando la laptop en paralelo, utilizare 12 hilos.
+
+```bash
+fastqc -t 12 -o fastqc_result *.fastq.gz
+```
+
+por su puesto con esto obtengo el fastqc general de todos, el output obtenido:
+
+```bash
+(star_env) joelheaz@DESKTOP-MHDiaz:~/proyecto_rnaseq/fastqc_result$ ls
+SRR9125589_1_fastqc.html  SRR9125829_2_fastqc.html  SRR9126377_1_fastqc.html  SRR9126452_2_fastqc.html
+SRR9125589_1_fastqc.zip   SRR9125829_2_fastqc.zip   SRR9126377_1_fastqc.zip   SRR9126452_2_fastqc.zip
+SRR9125589_2_fastqc.html  SRR9126031_1_fastqc.html  SRR9126377_2_fastqc.html  SRR9126454_1_fastqc.html
+SRR9125589_2_fastqc.zip   SRR9126031_1_fastqc.zip   SRR9126377_2_fastqc.zip   SRR9126454_1_fastqc.zip
+SRR9125829_1_fastqc.html  SRR9126031_2_fastqc.html  SRR9126452_1_fastqc.html  SRR9126454_2_fastqc.html
+SRR9125829_1_fastqc.zip   SRR9126031_2_fastqc.zip   SRR9126452_1_fastqc.zip   SRR9126454_2_fastqc.zip
+```
+
+<details>
+<summary>Clic aquí para ver Imagenes representativas del fastQC </summary>
+Imagenes representativas
+![imagen de fastQC](/img/fastQC/adapter_content.png)
+![imagen de fastQC](/img/fastQC/duplication_levels.png)
+![imagen de fastQC](/img/fastQC/per_base_quality.png)
+![imagen de fastQC](/img/fastQC/per_sequence_gc_content.png)
+</details>
+
+tras revisar los `.html` individuales todas las muestras tienen una buena calidad, y revisare el informe de multiqc
+
+### instalando multiqc
+
+```bash
+conda install multiqc
+```
+
+Y finalmente utilizo:
+
+```bash
+multiqc -o multiqc_result fastqc_result
+```
+<details>
+<summary>Clic aquí para ver Imagenes representativas del multiQC </summary>
+observando la siguiente imagen representativa:
+![imagen de fastQC](/img/multiQC/fastqc_adapter_content_plot.png)
+![imagen de fastQC](/img/multiQC/fastqc_per_base_sequence_quality_plot.png)
+![imagen de fastQC](/img/multiQC/fastqc_per_sequence_gc_content_plot.png)
+![imagen de fastQC](/img/multiQC/fastqc_sequence_duplication_levels_plot.png)
+</details>
+
+
+## Limpieza de secuencias
+
+Tecnicamente el resultado es bueno, desconozco si lo suficientemente bueno como para saltar el fastp, sin embargo realizare el fastp, si no fuere necesario, al menos lo hago para fines de aprendizaje.
+
+### Fastp
+
+```bash
+conda install fastp
+```
+
+Creare un directorio para el output de fastp
+
+```bash
+mkdir fastp_result
+```
+
+y finalmente correre fastp para cada muestra en su version paired
+
+```bash
+fastp -i read_1.fastq.gz -I read_2.fastq.gz -o read_1-fp.fastq.gz -O read_2-fp.fastq.gz -h report.html -j report.json
+```
+
+obteniendo como resultado:
+
+```bash
+(star_env) joelheaz@DESKTOP-MHDiaz:~/proyecto_rnaseq/fastp_result$ ls
+SRR9125589_1-fp.fastq.gz  SRR9125829_report.html    SRR9126377_1-fp.fastq.gz  SRR9126452_report.html
+SRR9125589_2-fp.fastq.gz  SRR9125829_report.json    SRR9126377_2-fp.fastq.gz  SRR9126452_report.json
+SRR9125589_report.html    SRR9126031_1-fp.fastq.gz  SRR9126377_report.html    SRR9126454_1-fp.fastq.gz
+SRR9125589_report.json    SRR9126031_2-fp.fastq.gz  SRR9126377_report.json    SRR9126454_2-fp.fastq.gz
+SRR9125829_1-fp.fastq.gz  SRR9126031_report.html    SRR9126452_1-fp.fastq.gz  SRR9126454_report.html
+SRR9125829_2-fp.fastq.gz  SRR9126031_report.json    SRR9126452_2-fp.fastq.gz  SRR9126454_report.json
+```
+
+<details>
+<summary>Clic aquí para ver una captura del fastp report</summary>
+![imagen de ejemplo de fastp](/img/fastP/fastp.jpg)
+</details>
+
+Posteriormente corri otro fastQC para los datos procesados por fastp
+
+<details>
+<summary>Clic aquí para ver la comparativa del multiQC</summary>
+
+Antes
+![imagen de ejemplo de fastp](/img/multiQC/fastqc_adapter_content_plot.png)
+Despues
+![imagen de ejemplo de fastp](/img/multiQC_fastp/fastqc_adapter_content_plot%20(1).png)
+
+Antes
+![imagen de ejemplo de fastp](/img/multiQC/fastqc_per_base_sequence_quality_plot.png)
+Despues
+![imagen de ejemplo de fastp](/img/multiQC_fastp/fastqc_per_base_sequence_quality_plot%20(1).png)
+
+
+Antes
+![imagen de ejemplo de fastp](/img/multiQC/fastqc_per_sequence_gc_content_plot.png)
+Despues
+![imagen de ejemplo de fastp](/img/multiQC_fastp/fastqc_per_sequence_gc_content_plot%20(1).png)
+
+
+Antes
+![imagen de ejemplo de fastp](/img/multiQC/fastqc_sequence_duplication_levels_plot.png)
+Despues
+![imagen de ejemplo de fastp](/img/multiQC_fastp/fastqc_sequence_duplication_levels_plot%20(1).png)
+
+
+</details>
+
+## Hisat2
+
+Dado el susto inicial con star (el github citado al inicio advertia un minimo de 16GB de RAM libres y una recomendacion de 32GB de RAM libres), opte por comenzar con el alineamiento de star confiando en que seria mas ligero y mi laptop con su pderoso `Ryzen 7 PRO 5850U con 16GB de RAM` podria con el trabajo, aunque como veremos, necesitare de una herramienta diferente.
+
+Hisat2 lo estoy corriendo en el star_env (por practicidad)
+
+### Instalando Hisat2
+
+```bash
+conda install hisat2
+```
+
+### single end (simulado)
+
+Para "simular" un alineamiento single end voy a utilizar las lectiras "_1-fp.fastq.gz" de que obtuve en "fastp_result"
+
+`$ hisat2 -x mm39.gencode.M36.hisat -U read.fastq.gz -S
+output.sam`
+
+<details>
+<summary>Clic aquí para ver los resultados en extenso del bash</summary>
+el resultado fue el siguiente:
+
+```bash
+$ hisat2 -x mm39.gencode.M36.hisat -U SRR9125589_1-fp.fastq.gz -S
+output.sam
+
+Time loading forward index: 00:00:07
+Time loading reference: 00:00:02
+Multiseed full-index search: 00:06:35
+27454046 reads; of these:
+  27454046 (100.00%) were unpaired; of these:
+    1386656 (5.05%) aligned 0 times
+    22988782 (83.74%) aligned exactly 1 time
+    3078608 (11.21%) aligned >1 times
+94.95% overall alignment rate
+Time searching: 00:06:37
+Overall time: 00:06:44
+
+$ hisat2 -x mm39.gencode.M36.hisat -U SRR9125829_1-fp.fastq.gz -S
+output.sam
+
+Time loading forward index: 00:00:06
+Time loading reference: 00:00:01
+Multiseed full-index search: 00:16:57
+25197754 reads; of these:
+  25197754 (100.00%) were unpaired; of these:
+    3013744 (11.96%) aligned 0 times
+    16314409 (64.75%) aligned exactly 1 time
+    5869601 (23.29%) aligned >1 times
+88.04% overall alignment rate
+Time searching: 00:16:58
+Overall time: 00:17:04
+
+$ hisat2 -x mm39.gencode.M36.hisat -U SRR9126031_1-fp.fastq.gz -S
+output.sam
+
+Time loading forward index: 00:00:16
+Time loading reference: 00:00:02
+Multiseed full-index search: 00:07:45
+25787802 reads; of these:
+  25787802 (100.00%) were unpaired; of these:
+    1569140 (6.08%) aligned 0 times
+    20814257 (80.71%) aligned exactly 1 time
+    3404405 (13.20%) aligned >1 times
+93.92% overall alignment rate
+Time searching: 00:07:47
+Overall time: 00:08:04
+
+$ hisat2 -x mm39.gencode.M36.hisat -U SRR9126377_1-fp.fastq.gz -S
+output.sam
+
+Time loading forward index: 00:00:06
+Time loading reference: 00:00:01
+Multiseed full-index search: 00:04:11
+23382921 reads; of these:
+  23382921 (100.00%) were unpaired; of these:
+    1268342 (5.42%) aligned 0 times
+    19667076 (84.11%) aligned exactly 1 time
+    2447503 (10.47%) aligned >1 times
+94.58% overall alignment rate
+Time searching: 00:04:12
+Overall time: 00:04:18
+
+$ hisat2 -x mm39.gencode.M36.hisat -U SRR9126452_1-fp.fastq.gz -S
+output.sam
+
+Time loading forward index: 00:00:06
+Time loading reference: 00:00:01
+Multiseed full-index search: 00:06:18
+22611257 reads; of these:
+  22611257 (100.00%) were unpaired; of these:
+    1367237 (6.05%) aligned 0 times
+    18394240 (81.35%) aligned exactly 1 time
+    2849780 (12.60%) aligned >1 times
+93.95% overall alignment rate
+Time searching: 00:06:19
+Overall time: 00:06:25
+
+$ hisat2 -x mm39.gencode.M36.hisat -U SRR9126454_1-fp.fastq.gz -S
+output.sam
+
+Time loading forward index: 00:00:06
+Time loading reference: 00:00:02
+Multiseed full-index search: 00:04:57
+18128570 reads; of these:
+  18128570 (100.00%) were unpaired; of these:
+    1391715 (7.68%) aligned 0 times
+    14297916 (78.87%) aligned exactly 1 time
+    2438939 (13.45%) aligned >1 times
+92.32% overall alignment rate
+Time searching: 00:04:59
+Overall time: 00:05:05
+
+```
+</details>
+
+
+En resumen, cada muestra tiene las siguientes caracteristicas:
+
+```bash
+
+Muestra SRR9125589_1
+Tiempo_total 00:06:44
+Peso_archivo 10.3 GB
+
+Muestra SRR9125829_1
+Tiempo_total 00:17:04
+Peso_archivo 12.1 GB
+
+Muestra SRR9126031_1
+Tiempo_total 00:08:04
+Peso_archivo 10.1 GB
+
+Muestra SRR9126377_1
+Tiempo_total 00:04:18
+Peso_archivo 8.36 GB
+
+Muestra SRR9126452_1
+Tiempo_total 00:06:25
+Peso_archivo 8.82 GB
+
+Muestra SRR9126454_1
+Tiempo_total 00:05:05
+Peso_archivo 7.08 GB
+
+```
+
+Lo que de manera total nos da
+
+```bash
+Tiempo_global 00:39:36
+Peso_total 56.76 GB
+```
+
+### parired end
+
+en la laptop con `Ryzen 7 PRO 5850U con 16GB de RAM` arrojo el siguiente error el paired end
+```bash
+Time loading forward index: 00:00:09
+Time loading reference: 00:00:02
+Killed
+(ERR): hisat2-align exited with value 137
+```
+
+Afortunadamente en mi PC de escritorio, si bien tengo un procesador un poco menor, un `Ryzen 5 5600G`, tengo 32 GB de RAM y una RTX 4060 (desconozco si es relevante la GPU). Asi que tralade los fastp y genoma de referencia para hisat2.
+
+```bash
+$ hisat2 -x mm39.gencode.M36.hisat -1 read_1.fastq.gz -2 read_2.fastq.gz -S output.sam
+```
+
+Durante el proceso, como se puede observar en la siguiente captura, es observable porque el paired end fallo en la laptop de 16GB de ram, pues en la PC de escritorio el alineamiento con hisat2 esta consumiendo 22 GB de RAM por si mismo, por su puesto para evitar cualquier error y eficientar el proceso, cerre todos los procesos en segundo plano que consuman tambien mas ram.
+
+<details>
+<summary>Clic aquí para ver el consumo de RAM y CPU</summary>
+![imagen del proceso consumiento 22 GB de ram](/img/ram.jpeg)
+</details>
+
+Tambien la memoria total fue un problema, pero reorganizando mis archivos pude abrir un espacio.
+
+## STAR
+
+Star lo instalamos al inicio al momento de crear el entorno
