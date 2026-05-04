@@ -254,7 +254,7 @@ Despues
 
 ## Hisat2
 
-Dado el susto inicial con star (el github citado al inicio advertia un minimo de 16GB de RAM libres y una recomendacion de 32GB de RAM libres), opte por comenzar con el alineamiento de star confiando en que seria mas ligero y mi laptop con su pderoso `Ryzen 7 PRO 5850U con 16GB de RAM` podria con el trabajo, aunque como veremos, necesitare de una herramienta diferente.
+Dado el susto inicial con star (el github citado al inicio advertia un minimo de 16GB de RAM libres y una recomendacion de 32GB de RAM libres), opte por comenzar con el alineamiento con hisat2 confiando en que seria mas ligero y mi laptop con su pderoso `Ryzen 7 PRO 5850U con 16GB de RAM` podria con el trabajo, aunque como veremos, necesitare de una herramienta diferente.
 
 Hisat2 lo estoy corriendo en el star_env (por practicidad)
 
@@ -266,7 +266,7 @@ conda install hisat2
 
 ### single end (simulado)
 
-Para "simular" un alineamiento single end voy a utilizar las lectiras "_1-fp.fastq.gz" de que obtuve en "fastp_result"
+Para "simular" un alineamiento single end voy a utilizar las lectiras "_1-fp.fastq.gz" que obtuve en "fastp_result"
 
 `$ hisat2 -x mm39.gencode.M36.hisat -U read.fastq.gz -S
 output.sam`
@@ -407,7 +407,7 @@ Tiempo_global 00:39:36
 Peso_total 56.76 GB
 ```
 
-### parired end
+### Parired end
 
 en la laptop con `Ryzen 7 PRO 5850U con 16GB de RAM` arrojo el siguiente error el paired end
 
@@ -483,7 +483,7 @@ Aborted (core dumped)
 
 Es evidente que Hisat2 para Single-End es bastante "amable" en cuanto a las prestaciones de equipo necesarias, una laptop con un ryzen 7 PRo y 16 GB de RAM pudieron completar adecuadamente los alineamientos.
 
-No asi la forma Paired-End, donde la laptop fracaso por completo, e incluso cambiando a un equipo con prestaciones de RAM mayores, se pudo completar unicamente una muestra, las demas colapsaron, al investigar el numero de error el lenguaje no fue exactamente el mas amigable con los tecnicismos, pero si entendi bien, en primera instancia el error 134 hace referencia a que hisat2 no encontro la secuencia _2, sin embargo dado el alineamiento siguiente (star si se completo con exito), tengo la hipotesis de que quiza fue un tema de que Hisat2 para pared-end en realidad puede exigir mucha mas memoria ram, y este error se debe a que cargar dos secuencias podrian exigir mucho y quiza hisat2 no esta del todo optimizado para minimizar el consumo de ram (?) en realidad estoy hablando al aire.
+No asi la forma paired-End, donde la laptop fracaso por completo, e incluso cambiando a un equipo con prestaciones de RAM mayores, se pudo completar unicamente una muestra, las demas colapsaron, al investigar el numero de error el lenguaje no fue exactamente el mas amigable con los tecnicismos, pero si entendi bien, en primera instancia el error 134 hace referencia a que hisat2 no encontro la secuencia _2, sin embargo dado el alineamiento siguiente (star si se completo con exito), tengo la hipotesis de que quiza fue un tema de que Hisat2 para paired-end en realidad puede exigir mucha mas memoria ram, y este error se debe a que cargar dos secuencias podrian exigir mucho y quiza hisat2 no esta del todo optimizado para minimizar el consumo de ram (?) en realidad estoy hablando al aire.
 
 
 ### Resumen de Alineamientos HISAT2
@@ -501,7 +501,7 @@ No asi la forma Paired-End, donde la laptop fracaso por completo, e incluso camb
 ## STAR
 
 Star se instalo al inicio al momento de crear el entorno, cabe destacar que este proceso, dada la advertencia del github, se realizo tanto la forma single end como paired end en la PC Ryzen 5 5600G con 32GB de RAM y RTX.
-Ademas quisiera aclarar que emprendi este alineamiento menos optimista dado el resultado paired-end de Hisat2, por lo que lo que cometi el error de no llevar un registro mas cercano del consumo de RAM.
+Ademas quisiera aclarar que emprendi este alineamiento menos optimista dado el resultado paired-end de Hisat2, por lo que cometi el error de no llevar un registro mas cercano del consumo de RAM.
 
 De acuerdo con la guia del usuario del github de STAR, la estrucutra del alinemiento es la siguiente: (en corchetes pongo lo que se agrega para paired-end)
 
@@ -519,13 +519,13 @@ donde:
 
 `--runThreadN 8` Define el número de hilos (threads) paralelos. Usamos 8 para mantener estable el Ryzen 5 (en el ryzen 7 quiza hubiera podido usar 12 hilos pero la RAM fue la limitante en este caso)
 `--genomeDir` Indica la ruta donde reside el índice del genoma
-`--readFilesIn` Archivos de entrada. En Paired-End se pasan ambos; en Single-End solo el R1.
+`--readFilesIn` Archivos de entrada. En Paired-End se pasan ambos, en Single-End solo el _1.
 `--readFilesCommand zcat` Instruye a STAR para descomprimir los archivos .gz, evitando ocupar espacio extra en disco.
 `--outFileNamePrefix`  Define la ruta y el prefijo de los archivos de salida
 `--outTmpDir`  Directorio para archivos temporales. Usar /tmp/ es vital en Windows/WSL para evitar errores de permisos en discos NTFS. (agregado por Gemini tras errores previos, errores no registrados en este reporte)
-`--outSAMtype BAM SortedByCoordinate`  Genera directamente archivos BAM (binarios) ya ordenados por posición genómica, ahorrando el paso de usar samtools sort.
+`--outSAMtype BAM SortedByCoordinate`  Genera archivos BAM.
 
-Finalmente, antes de mostrar los resultados obtenidos, como mencione anteriormente empece este proceso algo pesimista, intuia que el proceso iba a fallar asi que deje el equipo funcionando durante la madrugada y solicite a Gemini un ciclo for para eficientar el proceso de ambas muestras (entiendo de un mejor proceso hubiera sido usar nexflow como en la tarea opcional, disponible en mi github, sin embargo fue una salida, acepto, algo vaga, pero rapida de salir de la duda de si el proceso no iba a funcionar), la linea de comando final fue, por tanto, la siguiente:
+Finalmente, antes de mostrar los resultados obtenidos, como mencione anteriormente empece este proceso algo pesimista, intuia que el proceso iba a fallar asi que deje el equipo funcionando durante la madrugada y solicite a Gemini un ciclo for para eficientar el proceso de ambas muestras (entiendo que un mejor proceso hubiera sido usar nexflow como en la tarea opcional, sin embargo fue una salida, acepto, algo vaga, pero rapida de salir de la duda de si el proceso no iba a funcionar), la linea de comando final fue, por tanto, la siguiente:
 
 
 ```bash
@@ -837,7 +837,7 @@ Fue una sorpresa personal que STAR corriera apropiadamente, reitero, era pesimis
 
 ### Resumen de resultados STAR
 
-El proceso comenzo a las 01:31:25 y termino a las 05:16:50, es decir que duro poco mas de 4 horas y media y en resumen se tuvieron las siguientes caracteristicas:
+El proceso comenzo a las 01:31:25 y termino a las 05:16:50, es decir que duro poco mas de 3 horas y media en total. hora y media para el single end y poco mas de dos horas para el pared end. en resumen se tuvieron las siguientes caracteristicas:
 
 
 | Muestra | Single-End (Tiempo / Peso) | Paired-End (Tiempo / Peso) | Estado |
@@ -850,21 +850,20 @@ El proceso comenzo a las 01:31:25 y termino a las 05:16:50, es decir que duro po
 | **SRR9126454** | 00:13:52 / 708 MB | 00:19:04 / 1.48 GB | Exitoso |
 
 
-### Comparativa de Desempeño: HISAT2 vs. STAR
+## Comparativa de Desempeño: HISAT2 vs. STAR
 
 A continuación se contrastan los tiempos de ejecución y el tamaño de los archivos resultantes entre HISAT2 y STAR. 
 
-Es importante destacar la diferencia en el peso de los archivos: HISAT2 generó por defecto archivos de texto plano sin compresión (`.sam`), mientras que STAR fue configurado para generar directamente archivos binarios ordenados (`.bam`), optimizando significativamente el almacenamiento.
+Es importante destacar la diferencia en el peso de los archivos: HISAT2 generó por defecto archivos (`.sam`), mientras que STAR genero directamente archivos (`.bam`), razon por la cual, la diferencia de peso es considerable.
 
 | Muestra | HISAT2 Single (Tiempo / Peso) | STAR Single (Tiempo / Peso) | HISAT2 Paired (Estado / Peso) | STAR Paired (Tiempo / Peso) |
 | :--- | :--- | :--- | :--- | :--- |
-| **SRR9125589** | 00:06:44 / 10.3 GB | 00:14:57 / 997 MB | Fallo (Error 134) | **00:21:22 / 2.24 GB** (Éxito) |
-| **SRR9125829** | 00:17:04 / 12.1 GB | 00:17:43 / 1.14 GB | Fallo (Error 134) | **00:32:31 / 2.35 GB** (Éxito) |
-| **SRR9126031** | 00:08:04 / 10.1 GB | 00:15:17 / 992 MB | Fallo (Error 134) | **00:23:27 / 2.13 GB** (Éxito) |
-| **SRR9126377** | 00:04:18 / 8.36 GB | 00:13:33 / 670 MB | 00:12:22 / 16.7 GB (Éxito) | **00:17:46 / 1.49 GB** (Éxito) |
-| **SRR9126452** | 00:06:25 / 8.82 GB | 00:14:44 / 911 MB | Fallo (Error 134) | **00:21:03 / 1.89 GB** (Éxito) |
-| **SRR9126454** | 00:05:05 / 7.08 GB | 00:13:52 / 708 MB | Fallo (Error 134) | **00:19:04 / 1.48 GB** (Éxito) |
+| **SRR9125589** | 00:06:44 / 10.3 GB | 00:14:57 / 997 MB | Fallo (Error 134) | **00:21:22 / 2.24 GB** |
+| **SRR9125829** | 00:17:04 / 12.1 GB | 00:17:43 / 1.14 GB | Fallo (Error 134) | **00:32:31 / 2.35 GB** |
+| **SRR9126031** | 00:08:04 / 10.1 GB | 00:15:17 / 992 MB | Fallo (Error 134) | **00:23:27 / 2.13 GB** |
+| **SRR9126377** | 00:04:18 / 8.36 GB | 00:13:33 / 670 MB | 00:12:22 / 16.7 GB  | **00:17:46 / 1.49 GB** |
+| **SRR9126452** | 00:06:25 / 8.82 GB | 00:14:44 / 911 MB | Fallo (Error 134) | **00:21:03 / 1.89 GB** |
+| **SRR9126454** | 00:05:05 / 7.08 GB | 00:13:52 / 708 MB | Fallo (Error 134) | **00:19:04 / 1.48 GB** |
 
-**Análisis de la tabla:**
-Aunque HISAT2 parece ser ligeramente más rápido en el abordaje *Single-End*, creo que es una prestacion enorme que Hisat2 Single-End pueda correr en una laptop (Ryzen 7 PRO) con 16 GB de RAM, sin embargo su inestabilidad en el manejo de memoria (Errores 134 y 139) durante el mapeo *Paired-End* limitó su viabilidad. Por su parte, STAR demostró ser una herramienta robusta, aunque exigente con las prestaciones del equipo, pudo completar todas las muestras *Paired-End* de manera exitosa y entregando archivos `.bam`, pesando aproximadamente un 90% menos que los `.sam` generados por HISAT2. 
+Aunque HISAT2 parece ser ligeramente más rápido en el abordaje *Single-End* y creo que es una prestacion enorme que Hisat2 Single-End pueda correr en una laptop (Ryzen 7 PRO) con 16 GB de RAM, sin embargo su inestabilidad en el manejo de memoria (Errores 134 y 139) durante el mapeo *Paired-End* limitó su viabilidad. Por su parte, STAR demostró ser una herramienta robusta, aunque exigente con las prestaciones del equipo, pudo completar todas las muestras *Paired-End* de manera exitosa y entregando archivos `.bam`, pesando aproximadamente un 90% menos que los `.sam` generados por HISAT2. 
 
